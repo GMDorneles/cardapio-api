@@ -94,6 +94,22 @@ app.post("/auth/login", async (req, res) => {
   if (!checkPassword) {
     return res.status(422).json({ msg: "Invalid password" });
   }
+
+  try {
+    const secret = process.env.SECRET;
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      secret
+    );
+    res.status(200).json({ msg: "authentication was successful!", token });
+  } catch (err) {
+    res.status(500).json({
+      msg: "There was a server error, please try again later!",
+    });
+  }
 });
 //credentials
 const dbUser = process.env.DB_USER;
