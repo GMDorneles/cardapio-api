@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -31,7 +31,7 @@ routes.get("/user/:id", checkToken, async (req, res) => {
   res.status(200).json({ user });
 });
 
-function checkToken(req: any, res: any, next: any) {
+function checkToken(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
