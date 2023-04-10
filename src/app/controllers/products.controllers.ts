@@ -8,42 +8,85 @@ module.exports = {
   async product(req: Request, res: Response) {
     const { name, qty, price, category } = req.body;
 
-    if (category.length > 24) {
-      return res
-        .status(404)
-        .json({ msg: "The id must have a maximum of 24 numbers" });
+    //check if category exists
+    const categoryQty = category.length;
+    let categoryExistsQty = 0;
+
+    for (let i = 0; i < categoryQty; i++) {
+      let categoryExists = await Category.findById(category[i].id);
+
+      if (categoryExists) {
+        categoryExistsQty = categoryExistsQty + 1;
+      }
     }
 
-    //check if user exists
-    const categoryExists = await Category.findById(category);
-
-    if (!categoryExists) {
+    if (categoryQty < categoryExistsQty) {
       return res.status(404).json({ msg: "Category not found" });
     }
 
-    const product = new Product({
-      name,
-      qty,
-      price,
-    });
-    console.log(category);
-    console.log(product._id);
+    const createProduct = function (name: string, qty: number, price: number) {
+      return Product.create({
+        name,
+        qty,
+        price,
+      });
+    };
+
+    const product = await createProduct(name, qty, price);
     try {
-      await product.save();
-      Product.findByIdAndUpdate(
+      await Product.findByIdAndUpdate(
         product._id,
-        { category: category },
+        { $push: { categories: category } },
         { new: true, useFindAndModify: false }
       );
 
-      Category.findByIdAndUpdate(
-        category,
-        { $push: { products: product._id } },
-        { new: true, useFindAndModify: false }
-      );
-
-      res.status(201).json({ msg: "category successfully created!" });
+      res.status(201).json({ msg: "Product successfully created!" });
     } catch (err) {
+      return res.status(500).json({
+        msg: "There was a server error, please try again later!",
+      });
+    }
+  },
+
+  //List product
+  async listProduct(req: Request, res: Response) {
+    //check if product exists
+    const product = await Product.find();
+
+    if (!product) {
+      return res.status(404).json({ msg: "product not found" });
+    }
+
+    res.status(200).json({ product });
+  },
+
+  //List product:id
+  async listProductById(req: Request, res: Response) {
+    const { name, qty, price, category } = req.body;
+    const id = req.params.id;
+    //check if product exists
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ msg: "product not found" });
+    }
+
+    res.status(200).json({ msg: "certo!" });
+  },
+
+  //delete product
+  async deleteProductById(req: Request, res: Response) {
+    const id = req.params.id;
+    //check if product exists
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ msg: "product not found" });
+    }
+    try {
+      await Product.deleteOne({ _id: product._id });
+      res.status(201).json({ msg: "The product has been deleted!" });
+    } catch {
       return res.status(500).json({
         msg: "There was a server error, please try again later!",
       });
