@@ -62,16 +62,50 @@ module.exports = {
 
   //List product:id
   async listProductById(req: Request, res: Response) {
-    const { name, qty, price, category } = req.body;
     const id = req.params.id;
+
+    if (id.length > 24) {
+      return res
+        .status(404)
+        .json({ msg: "The id must have a maximum of 24 numbers" });
+    }
+
     //check if product exists
     const product = await Product.findById(id);
-
     if (!product) {
       return res.status(404).json({ msg: "product not found" });
     }
 
-    res.status(200).json({ msg: "certo!" });
+    res.status(200).json({ product });
+  },
+  //update product:id
+  async updateProductById(req: Request, res: Response) {
+    const { name, qty, price, category } = req.body;
+    const id = req.params.id;
+
+    if (id.length > 24) {
+      return res
+        .status(404)
+        .json({ msg: "The id must have a maximum of 24 numbers" });
+    }
+
+    //check if product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ msg: "product not found" });
+    }
+
+    try {
+      await Product.findByIdAndUpdate(
+        product._id,
+        { categories: category, name: name, price: price, qty: qty },
+        { new: true, useFindAndModify: false }
+      );
+    } catch (err) {
+      console.log(err);
+    }
+
+    res.status(200).json({ msg: "The product has been updated!" });
   },
 
   //delete product

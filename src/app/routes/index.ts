@@ -15,6 +15,7 @@ routes.get("/category", Category.category);
 routes.post("/product", checkToken, Product.product);
 routes.get("/product", checkToken, Product.listProduct);
 routes.get("/product/:id", checkToken, Product.listProductById);
+routes.post("/product/:id", checkToken, Product.updateProductById);
 routes.delete("/product/:id", checkToken, Product.deleteProductById);
 
 module.exports = routes;
