@@ -12,6 +12,9 @@ routes.post("/auth/register", Users.register);
 routes.post("/auth/login", Users.login);
 routes.post("/category", checkToken, Category.createCategory);
 routes.get("/category", Category.category);
-routes.get("/product", Product.product);
+routes.post("/product", checkToken, Product.product);
+routes.get("/product", checkToken, Product.listProduct);
+routes.get("/product/:id", checkToken, Product.listProductById);
+routes.delete("/product/:id", checkToken, Product.deleteProductById);
 
 module.exports = routes;
